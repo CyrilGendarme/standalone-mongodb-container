@@ -1,0 +1,29 @@
+services:
+  db:
+    image: mongo:8.0
+    container_name: mongodb
+    restart: unless-stopped
+    env_file:
+      - ./init_db_creation/.env.db_secrets
+    volumes:
+      - ./entrypoint.sh:/usr/local/bin/entrypoint.sh:ro
+      - ./init_db_creation/create_multiple_dbs.sh:/usr/local/bin/db-scripts/create_multiple_dbs.sh:ro
+      - ./init_db_creation/create_multiple_dbs.js:/usr/local/bin/db-scripts/create_multiple_dbs.js:ro
+      - ./init_db_creation/empty_dbs.sh:/usr/local/bin/db-scripts/empty_dbs.sh:ro
+      - ./init_db_creation/empty_dbs.js:/usr/local/bin/db-scripts/empty_dbs.js:ro
+      - ./init_db_creation/truncate_db_collections.sh:/usr/local/bin/db-scripts/truncate_db_collections.sh:ro
+      - ./init_db_creation/truncate_db_collections.js:/usr/local/bin/db-scripts/truncate_db_collections.js:ro
+      - mongo_data:/data/db
+    entrypoint: ["/usr/local/bin/entrypoint.sh"]
+    command: ["mongod", "--auth", "--bind_ip_all"]
+    ports:
+      - "127.0.0.1:27017:27017" # Only exposed for dev. In production, use the shared Docker network.
+    networks:
+      - vps_microservices
+
+volumes:
+  mongo_data:
+
+networks:
+  vps_microservices:
+    external: true
